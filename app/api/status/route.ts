@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server';
-import { kv } from '@vercel/kv'; // We'll use Vercel KV for global state if available, or a simple memory cache
 
-// Fallback in-memory store for cloud state (resets on redeploy)
+// In-memory store for cloud state (resets on server restart/redeploy)
 let cloudState = {
-  logs: [{ id: 'init', source: 'SYSTEM', message: 'Cloud Bridge Initialized. Waiting for M4 signal...', timestamp: '00:00:00', type: 'alert' }],
+  logs: [{ id: 'init', source: 'SYSTEM', message: 'Cloud Bridge Initialized. Waiting for M4 signal...', timestamp: new Date().toLocaleTimeString(), type: 'alert' }],
   agents: { hunter: { status: 'offline' }, guardian: { status: 'offline' }, navigator: { status: 'offline' } },
   resources: { gcp: 300, api_calls: 0, memory: 0, cpu: 0 }
 };
 
-const AUTH_KEY = "galaxy_secure_alpha_2026"; // In a real app, this would be an env var
+const AUTH_KEY = "galaxy_secure_alpha_2026";
 
 export async function GET() {
   return NextResponse.json(cloudState);
