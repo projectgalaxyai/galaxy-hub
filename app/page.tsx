@@ -1,6 +1,7 @@
 import FleetStatus from '@/components/FleetStatus';
 import ConstellationFeed from '@/components/ConstellationFeed';
 import ResourceMonitor from '@/components/ResourceMonitor';
+import ChatWindow from '@/components/ChatWindow';
 import { Sidebar } from '@/components/Sidebar';
 import { ArrowRight, Activity, Zap, Command, Menu } from 'lucide-react';
 
@@ -56,7 +57,7 @@ export default function Home() {
         <div className="flex-1 overflow-y-auto p-6 lg:p-10 space-y-8 custom-scrollbar">
           
           {/* Welcome Section */}
-          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 mb-8">
+          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 mb-8 text-left">
             <div>
               <h1 className="text-3xl md:text-4xl font-black italic tracking-tighter uppercase text-white leading-none mb-2">
                 Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">Bryan</span>
@@ -71,56 +72,22 @@ export default function Home() {
             </button>
           </div>
 
-          {/* KPI Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* KPI 1 */}
-            <div className="p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-sm hover:border-blue-500/20 transition-all group">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-blue-400 transition-colors">Total Leads</span>
-                <Activity className="w-4 h-4 text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
-              </div>
-              <div className="text-3xl font-black italic text-white tracking-tighter mb-1">1,248</div>
-              <div className="text-[10px] font-bold text-emerald-400 flex items-center gap-1 uppercase tracking-wide">
-                <ArrowRight className="w-3 h-3 rotate-[-45deg]" />
-                +12% this week
-              </div>
-            </div>
-             {/* KPI 2 */}
-            <div className="p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-sm hover:border-blue-500/20 transition-all group">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-blue-400 transition-colors">API Usage</span>
-                <Zap className="w-4 h-4 text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.4)]" />
-              </div>
-              <div className="text-3xl font-black italic text-white tracking-tighter mb-1">45%</div>
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-                450 / 1000 daily calls
-              </div>
-            </div>
-            {/* KPI 3 */}
-             <div className="p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-sm hover:border-blue-500/20 transition-all group">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-blue-400 transition-colors">Storage</span>
-                <Command className="w-4 h-4 text-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]" />
-              </div>
-              <div className="text-3xl font-black italic text-white tracking-tighter mb-1">64 GB</div>
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-                128 GB Total Cap
-              </div>
-            </div>
-          </div>
-
-          {/* Main Grid: Fleet & Feed */}
+          {/* Main Grid: Multi-Column Focus */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-12">
-            {/* Left Column: Fleet Status & Resources (4 cols) */}
-            <div className="lg:col-span-4 space-y-6 flex flex-col">
+            
+            {/* Left Column: Fleet & Resources (3 cols) */}
+            <div className="lg:col-span-3 space-y-6">
               <FleetStatus />
-              <div className="flex-1">
-                 <ResourceMonitor />
-              </div>
+              <ResourceMonitor />
             </div>
 
-            {/* Right Column: Mission Feed (8 cols) */}
-            <div className="lg:col-span-8 flex flex-col h-full min-h-[400px]">
+            {/* Center Column: Secure Terminal (5 cols) */}
+            <div className="lg:col-span-5">
+              <ChatWindow />
+            </div>
+
+            {/* Right Column: Mission Feed (4 cols) */}
+            <div className="lg:col-span-4 h-full min-h-[400px]">
               <ConstellationFeed />
             </div>
           </div>
