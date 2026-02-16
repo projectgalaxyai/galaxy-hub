@@ -33,14 +33,14 @@ export default function ChatModal({ isOpen, onClose }: ChatModalProps) {
   if (!isOpen) return null;
 
   const waitForResponse = async () => {
-    // Poll the server every 2 seconds to see if the M4 has pushed a reply
+    if (pollingInterval.current) clearInterval(pollingInterval.current);
+    
     pollingInterval.current = setInterval(async () => {
       try {
         const res = await fetch('/api/chat');
         const data = await res.json();
         
-        // If the M4 has updated the lastResponse, display it
-        if (data.lastResponse && data.lastResponse !== "Signal received. M4 processing...") {
+        if (data.lastResponse && data.lastResponse !== "") {
           const assistantMsg: Message = {
             id: Date.now().toString(),
             role: 'assistant',
@@ -74,23 +74,14 @@ export default function ChatModal({ isOpen, onClose }: ChatModalProps) {
     setLoading(true);
 
     try {
-      // Send the message to the cloud relay
       await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: currentInput })
       });
-      
-      // Start waiting for the M4 to respond
       waitForResponse();
-      
     } catch (err) {
-      setMessages(prev => [...prev, { 
-        id: 'err', 
-        role: 'assistant', 
-        content: "Neural Link severed. Re-establish connection.", 
-        timestamp: new Date().toLocaleTimeString() 
-      }]);
+      setMessages(prev => [...prev, { id: 'err', role: 'assistant', content: "Neural Link severed.", timestamp: new Date().toLocaleTimeString() }]);
       setLoading(false);
     }
   };
@@ -117,7 +108,8 @@ export default function ChatModal({ isOpen, onClose }: ChatModalProps) {
           </button>
         </div>
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-[url('/grid.svg')] bg-fixed opacity-95">
+        {/* Replaced grid.svg with a CSS pattern to fix 404 */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:24px_24px]">
           {messages.map((msg) => (
             <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
               <div className="flex items-center gap-2 mb-1.5 px-1">

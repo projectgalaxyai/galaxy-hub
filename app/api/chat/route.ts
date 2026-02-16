@@ -1,32 +1,34 @@
 import { NextResponse } from 'next/server';
 
+// Durable State (cached in serverless memory for polling)
 let messageQueue: any[] = [];
-let lastResponse: string = "";
+let durableResponse: string = "";
 
 export async function GET() {
-  // If the requester is the local M4 (asking for messages)
   const pending = [...messageQueue];
   messageQueue = []; 
 
-  // Return both the pending queue and the last response so the UI can poll
-  return NextResponse.json({ pending, lastResponse });
+  return NextResponse.json({ 
+    pending, 
+    lastResponse: durableResponse 
+  });
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     
-    // Case 1: From Architect (Web)
+    // Case 1: From Architect (Web Terminal)
     if (body.message) {
       messageQueue.push({ id: Date.now().toString(), content: body.message });
-      // Reset last response so the UI waits for the new one
-      lastResponse = ""; 
+      // Clear old durable response when a new command starts
+      durableResponse = ""; 
       return NextResponse.json({ status: 'relayed' });
     }
 
-    // Case 2: From Orion (M4)
+    // Case 2: From Orion (M4 Relay)
     if (body.reply) {
-      lastResponse = body.reply;
+      durableResponse = body.reply;
       return NextResponse.json({ success: true });
     }
 
