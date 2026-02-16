@@ -1,34 +1,41 @@
 import { NextResponse } from 'next/server';
 
+// This acts as a simple sub-space relay (clears on redeploy)
+let messageQueue: any[] = [];
+let lastResponse: string = "";
+
+export async function GET() {
+  // The M4 calls this to see if there are new messages
+  const pending = [...messageQueue];
+  messageQueue = []; // Clear queue after pickup
+  return NextResponse.json({ pending });
+}
+
 export async function POST(request: Request) {
   try {
-    const { message } = await request.json();
-    const command = message.toLowerCase();
-
-    // Mission Control Command Logic
-    let reply = "";
-
-    if (command.includes("hunter")) {
-      reply = "DIRECTIVE: Hunter Activation. Initializing BDR prospecting sub-agents on M4 Neural Engine. Scanning Great Plains Communications parameters.";
-    } else if (command.includes("guardian")) {
-      reply = "DIRECTIVE: Guardian Shield engaged. Running autonomous E2E playwright tests on Constellation CRM. Integrity check in progress.";
-    } else if (command.includes("vitals") || command.includes("status")) {
-      reply = "TELEMETRY: System vitals stable. M4 Memory and CPU streams are verified. Connection to Greenhouse is nominal.";
-    } else if (command.includes("hello") || command.includes("orion")) {
-      reply = "Greetings, Bryan. The Director is online. All Galaxy sub-systems are green. Awaiting your next strategic move.";
-    } else {
-      reply = `ACKNOWLEDGED: "${message}" has been logged as a tactical directive to the M4 controller. Analysis sequence initiated.`;
+    const body = await request.json();
+    
+    // Case 1: Message from the Architect (Web Terminal)
+    if (body.message) {
+      messageQueue.push({
+        id: Date.now().toString(),
+        content: body.message,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Wait for a response to appear (Polling simulation)
+      // For this MVP, we return 'acknowledged' and let the M4 push the real reply later
+      return NextResponse.json({ status: 'relayed', reply: lastResponse || "Signal received. M4 processing..." });
     }
 
-    // Log to server console
-    console.log(`[TACTICAL COMMAND]: ${message}`);
+    // Case 2: Reply from the M4 (Orion Response)
+    if (body.reply) {
+      lastResponse = body.reply;
+      return NextResponse.json({ success: true });
+    }
 
-    return NextResponse.json({ 
-      reply: reply,
-      status: 'dispatched' 
-    });
+    return NextResponse.json({ error: 'Invalid Payload' }, { status: 400 });
   } catch (error) {
-    console.error("Chat API Error:", error);
-    return NextResponse.json({ error: 'Comms Link Failure' }, { status: 500 });
+    return NextResponse.json({ error: 'Relay Failure' }, { status: 500 });
   }
 }
