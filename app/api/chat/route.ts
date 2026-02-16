@@ -3,23 +3,28 @@ import { NextResponse } from 'next/server';
 export async function POST(request: Request) {
   try {
     const { message } = await request.json();
+    const command = message.toLowerCase();
+
+    // Mission Control Command Logic
+    let reply = "";
+
+    if (command.includes("hunter")) {
+      reply = "DIRECTIVE: Hunter Activation. Initializing BDR prospecting sub-agents on M4 Neural Engine. Scanning Great Plains Communications parameters.";
+    } else if (command.includes("guardian")) {
+      reply = "DIRECTIVE: Guardian Shield engaged. Running autonomous E2E playwright tests on Constellation CRM. Integrity check in progress.";
+    } else if (command.includes("vitals") || command.includes("status")) {
+      reply = "TELEMETRY: System vitals stable. M4 Memory and CPU streams are verified. Connection to Greenhouse is nominal.";
+    } else if (command.includes("hello") || command.includes("orion")) {
+      reply = "Greetings, Bryan. The Director is online. All Galaxy sub-systems are green. Awaiting your next strategic move.";
+    } else {
+      reply = `ACKNOWLEDGED: "${message}" has been logged as a tactical directive to the M4 controller. Analysis sequence initiated.`;
+    }
 
     // Log to server console
-    console.log(`[ORION INBOUND]: ${message}`);
-
-    const responses = [
-      "Directive received. Analysis in progress.",
-      "Acknowledged, Bryan. Executing tactical review.",
-      "Command confirmed. Hunter sub-agents standing by.",
-      "Signal locked. Updating Mission Control parameters.",
-      "Processing directive through M4 Neural Engine...",
-      "Strategic shift detected. Calibrating Hunter parameters."
-    ];
-    
-    const randomReply = responses[Math.floor(Math.random() * responses.length)];
+    console.log(`[TACTICAL COMMAND]: ${message}`);
 
     return NextResponse.json({ 
-      reply: randomReply,
+      reply: reply,
       status: 'dispatched' 
     });
   } catch (error) {

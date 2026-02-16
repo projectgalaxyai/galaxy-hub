@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Terminal, User, Cpu, X, Maximize2, Minimize2 } from 'lucide-react';
+import { Send, Terminal, User, Cpu, X, Activity, Database, Shield } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -16,8 +16,9 @@ interface ChatModalProps {
 }
 
 export default function ChatModal({ isOpen, onClose }: ChatModalProps) {
+  // Use state for history that persists while the browser tab is open
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', role: 'assistant', content: 'Orion online. Secure link established. Awaiting command, Bryan.', timestamp: new Date().toLocaleTimeString() }
+    { id: '1', role: 'assistant', content: 'Orion Secure Terminal established. Awaiting tactical directive, Bryan.', timestamp: new Date().toLocaleTimeString() }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -43,6 +44,7 @@ export default function ChatModal({ isOpen, onClose }: ChatModalProps) {
     };
 
     setMessages(prev => [...prev, userMsg]);
+    const currentInput = input;
     setInput('');
     setLoading(true);
 
@@ -50,20 +52,19 @@ export default function ChatModal({ isOpen, onClose }: ChatModalProps) {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: input })
+        body: JSON.stringify({ message: currentInput })
       });
       
       const data = await res.json();
       
-      if (data.reply) {
-        const assistantMsg: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: data.reply,
-          timestamp: new Date().toLocaleTimeString()
-        };
-        setMessages(prev => [...prev, assistantMsg]);
-      }
+      const assistantMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: data.reply || "Communication disrupted. Retrying...",
+        timestamp: new Date().toLocaleTimeString()
+      };
+      setMessages(prev => [...prev, assistantMsg]);
+      
     } catch (err) {
       console.error("Chat link failed");
     } finally {
@@ -72,77 +73,90 @@ export default function ChatModal({ isOpen, onClose }: ChatModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-300">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={onClose} />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+      {/* Backdrop - Click disabled for closing per Architect directive */}
+      <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md" />
       
       {/* Modal Container */}
-      <div className="relative w-full max-w-2xl h-[600px] flex flex-col bg-slate-900/90 border border-slate-700/50 rounded-3xl shadow-2xl shadow-blue-500/10 overflow-hidden animate-in zoom-in-95 duration-300">
+      <div className="relative w-full max-w-2xl h-[650px] flex flex-col bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl shadow-blue-500/10 overflow-hidden animate-in zoom-in-95 duration-200">
         
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/50">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800 bg-slate-950/50">
+          <div className="flex items-center gap-4">
+            <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 shadow-lg shadow-blue-500/5">
               <Terminal className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm font-black italic tracking-widest uppercase text-white">Secure Terminal</h3>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">Direct Link // Orion-M4</p>
+              <h3 className="text-sm font-black italic tracking-widest uppercase text-white">Project Galaxy Terminal</h3>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Active Command Session</p>
+              </div>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-white transition-colors">
+          <button 
+            onClick={onClose} 
+            className="p-2 bg-slate-800/50 rounded-lg text-slate-400 hover:text-white hover:bg-red-500/20 transition-all border border-slate-700 hover:border-red-500/30"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Messages Area */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-[url('/grid.svg')] bg-fixed opacity-95">
           {messages.map((msg) => (
-            <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-              <div className="flex items-center gap-2 mb-1">
+            <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+              <div className="flex items-center gap-2 mb-1.5 px-1">
                 {msg.role === 'assistant' ? (
-                  <><Cpu className="w-3 h-3 text-blue-500" /><span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Orion</span></>
+                  <><Cpu className="w-3 h-3 text-blue-500" /><span className="text-[9px] font-black uppercase tracking-widest text-slate-500 italic">Director Orion</span></>
                 ) : (
-                  <><span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Architect</span><User className="w-3 h-3 text-slate-400" /></>
+                  <><span className="text-[9px] font-black uppercase tracking-widest text-slate-500 italic">Architect Anneler</span><User className="w-3 h-3 text-slate-400" /></>
                 )}
               </div>
-              <div className={`max-w-[85%] p-4 rounded-2xl text-sm font-medium leading-relaxed ${
+              <div className={`max-w-[90%] p-4 rounded-2xl text-[13px] font-medium leading-relaxed shadow-xl ${
                 msg.role === 'user' 
-                  ? 'bg-blue-600 text-white rounded-tr-none shadow-lg shadow-blue-900/20' 
-                  : 'bg-slate-800/80 text-slate-200 rounded-tl-none border border-slate-700'
+                  ? 'bg-blue-600 text-white rounded-tr-none border border-blue-400/30' 
+                  : 'bg-slate-800 text-slate-100 rounded-tl-none border border-slate-700'
               }`}>
                 {msg.content}
               </div>
-              <span className="text-[8px] text-slate-600 mt-2 font-mono uppercase tracking-widest">{msg.timestamp}</span>
+              <span className="text-[8px] text-slate-600 mt-2 font-mono uppercase tracking-[0.2em]">{msg.timestamp}</span>
             </div>
           ))}
           {loading && (
-            <div className="flex items-center gap-2 text-blue-500 animate-pulse px-2">
-              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
-              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
-              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+            <div className="flex items-center gap-2 text-blue-500 animate-pulse px-2 bg-blue-500/5 py-2 rounded-lg border border-blue-500/10 w-fit">
+              <Activity className="w-3 h-3" />
+              <span className="text-[10px] font-black uppercase tracking-widest">Processing Neural Stream...</span>
             </div>
           )}
         </div>
 
         {/* Input Area */}
-        <div className="p-6 bg-slate-950/50 border-t border-slate-800">
-          <form onSubmit={handleSend} className="relative">
+        <div className="p-6 bg-slate-950/80 border-t border-slate-800 backdrop-blur-xl">
+          <form onSubmit={handleSend} className="relative group">
             <input
               type="text"
               autoFocus
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Awaiting directive..."
-              className="w-full bg-slate-900 border border-slate-800 rounded-2xl py-4 px-6 pr-14 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
+              placeholder="Inject tactical directive..."
+              className="w-full bg-slate-900 border border-slate-800 rounded-2xl py-4.5 px-6 pr-14 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all shadow-2xl group-hover:border-slate-700"
             />
             <button 
               type="submit"
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-3 text-blue-500 hover:text-blue-400 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-3 text-blue-500 hover:text-blue-400 transition-all hover:scale-110 active:scale-95"
             >
-              <Send className="w-5 h-5" />
+              <Send className="w-5 h-5 fill-current opacity-20 group-hover:opacity-100" />
             </button>
           </form>
+          <div className="mt-3 flex gap-4">
+             <div className="flex items-center gap-1.5 text-[8px] font-black text-slate-600 uppercase tracking-widest">
+               <Shield className="w-2.5 h-2.5" /> Encrypted Endpoint
+             </div>
+             <div className="flex items-center gap-1.5 text-[8px] font-black text-slate-600 uppercase tracking-widest">
+               <Database className="w-2.5 h-2.5" /> Logged to M4
+             </div>
+          </div>
         </div>
       </div>
     </div>
