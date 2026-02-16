@@ -1,34 +1,30 @@
 import { NextResponse } from 'next/server';
 
-// This acts as a simple sub-space relay (clears on redeploy)
 let messageQueue: any[] = [];
 let lastResponse: string = "";
 
 export async function GET() {
-  // The M4 calls this to see if there are new messages
+  // If the requester is the local M4 (asking for messages)
   const pending = [...messageQueue];
-  messageQueue = []; // Clear queue after pickup
-  return NextResponse.json({ pending });
+  messageQueue = []; 
+
+  // Return both the pending queue and the last response so the UI can poll
+  return NextResponse.json({ pending, lastResponse });
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     
-    // Case 1: Message from the Architect (Web Terminal)
+    // Case 1: From Architect (Web)
     if (body.message) {
-      messageQueue.push({
-        id: Date.now().toString(),
-        content: body.message,
-        timestamp: new Date().toISOString()
-      });
-      
-      // Wait for a response to appear (Polling simulation)
-      // For this MVP, we return 'acknowledged' and let the M4 push the real reply later
-      return NextResponse.json({ status: 'relayed', reply: lastResponse || "Signal received. M4 processing..." });
+      messageQueue.push({ id: Date.now().toString(), content: body.message });
+      // Reset last response so the UI waits for the new one
+      lastResponse = ""; 
+      return NextResponse.json({ status: 'relayed' });
     }
 
-    // Case 2: Reply from the M4 (Orion Response)
+    // Case 2: From Orion (M4)
     if (body.reply) {
       lastResponse = body.reply;
       return NextResponse.json({ success: true });
