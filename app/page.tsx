@@ -1,11 +1,16 @@
+'use client';
+
+import React, { useState } from 'react';
 import FleetStatus from '@/components/FleetStatus';
 import ConstellationFeed from '@/components/ConstellationFeed';
 import ResourceMonitor from '@/components/ResourceMonitor';
-import ChatWindow from '@/components/ChatWindow';
+import ChatModal from '@/components/ChatModal';
 import { Sidebar } from '@/components/Sidebar';
-import { ArrowRight, Activity, Zap, Command, Menu } from 'lucide-react';
+import { ArrowRight, Activity, Zap, Command, Menu, MessageSquare } from 'lucide-react';
 
 export default function Home() {
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
   return (
     <div className="flex h-screen w-full bg-[#020617] text-white font-sans overflow-hidden">
       
@@ -33,18 +38,28 @@ export default function Home() {
             <button className="md:hidden p-2 text-slate-400 hover:text-white">
               <Menu className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-left">
               <span className="text-slate-500">Mission Control</span>
               <span className="text-slate-700">/</span>
               <span className="text-blue-500">Dashboard</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 md:gap-6">
+            {/* Chat Trigger Button */}
+            <button 
+              onClick={() => setIsChatOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[10px] font-black tracking-widest text-blue-400 uppercase hover:bg-blue-500/20 transition-all shadow-lg shadow-blue-500/5 group"
+            >
+              <MessageSquare className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+              <span className="hidden sm:inline">Terminal</span>
+            </button>
+
             <div className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 text-[10px] font-black tracking-widest text-slate-400 uppercase shadow-inner">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
               System Online
             </div>
+            
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 p-[1px] shadow-[0_0_15px_-5px_rgba(59,130,246,0.6)]">
               <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center text-xs font-bold text-white">
                 BA
@@ -62,7 +77,7 @@ export default function Home() {
               <h1 className="text-3xl md:text-4xl font-black italic tracking-tighter uppercase text-white leading-none mb-2">
                 Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">Bryan</span>
               </h1>
-              <p className="text-slate-400 text-sm font-medium tracking-wide">
+              <p className="text-slate-400 text-sm font-medium tracking-wide text-left">
                 Orion is tracking <span className="text-white font-bold">3 active directives</span>. Fleet status is green.
               </p>
             </div>
@@ -72,28 +87,26 @@ export default function Home() {
             </button>
           </div>
 
-          {/* Main Grid: Multi-Column Focus */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-12">
+          {/* Main Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pb-12">
             
-            {/* Left Column: Fleet & Resources (3 cols) */}
-            <div className="lg:col-span-3 space-y-6">
+            {/* Left Column: Fleet & Resources (5 cols) */}
+            <div className="lg:col-span-5 space-y-8">
               <FleetStatus />
               <ResourceMonitor />
             </div>
 
-            {/* Center Column: Secure Terminal (5 cols) */}
-            <div className="lg:col-span-5">
-              <ChatWindow />
-            </div>
-
-            {/* Right Column: Mission Feed (4 cols) */}
-            <div className="lg:col-span-4 h-full min-h-[400px]">
+            {/* Right Column: Mission Feed (7 cols) */}
+            <div className="lg:col-span-7 h-full min-h-[500px]">
               <ConstellationFeed />
             </div>
           </div>
 
         </div>
       </main>
+
+      {/* Secure Terminal Modal */}
+      <ChatModal isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </div>
   );
 }
