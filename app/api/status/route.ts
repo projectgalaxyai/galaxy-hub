@@ -1,33 +1,39 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { kv } from '@vercel/kv'; // We'll use Vercel KV for global state if available, or a simple memory cache
 
-export const dynamic = 'force-dynamic'; // Always fetch fresh data
+// Fallback in-memory store for cloud state (resets on redeploy)
+let cloudState = {
+  logs: [{ id: 'init', source: 'SYSTEM', message: 'Cloud Bridge Initialized. Waiting for M4 signal...', timestamp: '00:00:00', type: 'alert' }],
+  agents: { hunter: { status: 'offline' }, guardian: { status: 'offline' }, navigator: { status: 'offline' } },
+  resources: { gcp: 300, api_calls: 0, memory: 0, cpu: 0 }
+};
 
-const LOG_FILE = path.join(process.cwd(), 'data', 'mission_log.json');
+const AUTH_KEY = "galaxy_secure_alpha_2026"; // In a real app, this would be an env var
 
 export async function GET() {
+  return NextResponse.json(cloudState);
+}
+
+export async function POST(request: Request) {
   try {
-    const fileContents = fs.readFileSync(LOG_FILE, 'utf8');
-    const data = JSON.parse(fileContents);
-    
-    // Calculate uptime or add dynamic fields if needed
-    const response = {
+    const body = await request.json();
+    const { key, data } = body;
+
+    if (key !== AUTH_KEY) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Update the cloud state with the incoming M4 telemetry
+    cloudState = {
       ...data,
       system: {
-        uptime: process.uptime(),
-        lastUpdate: new Date().toISOString()
+        lastUpdate: new Date().toISOString(),
+        location: 'Greenhouse M4'
       }
     };
 
-    return NextResponse.json(response);
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Failed to read mission log:', error);
-    // Fallback data if file is missing/locked
-    return NextResponse.json({
-      logs: [{ id: 'err', source: 'SYSTEM', message: 'Log connection lost.', timestamp: '00:00:00', type: 'alert' }],
-      agents: { hunter: { status: 'error' }, guardian: { status: 'error' }, navigator: { status: 'error' } },
-      resources: { gcp: 0, api_calls: 0, storage: 0 }
-    });
+    return NextResponse.json({ error: 'Payload Error' }, { status: 400 });
   }
 }
